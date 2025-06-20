@@ -10,4 +10,5 @@ public class CloudStorageApplication {
 		SpringApplication.run(CloudStorageApplication.class, args);
 	}
 
+
 }
