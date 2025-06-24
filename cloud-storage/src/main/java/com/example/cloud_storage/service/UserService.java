@@ -1,5 +1,7 @@
 package com.example.cloud_storage.service;
-import com.example.cloud_storage.entity.User;
+import com.example.cloud_storage.dtos.RegisterRequestDto;
+import com.example.cloud_storage.entity.UserEntity;
+import com.example.cloud_storage.mapper.UserMapper;
 import com.example.cloud_storage.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -7,8 +9,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Objects;
 
 @AllArgsConstructor
 @Service
@@ -18,15 +18,16 @@ public class UserService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+private final UserMapper userMapper;
 
-
-    public User signup(User user) {
+    public UserEntity signup(RegisterRequestDto registerRequestDto) {
+        UserEntity user = userMapper.toEntity(registerRequestDto);
         user.setPassword(bCryptPasswordEncoder
-                .encode(user.getPassword())); //önce user passwoedunu encrypted yapıyoruz sonra kaydediyoruz
+                .encode(registerRequestDto.getPassword())); //önce user passwoedunu encrypted yapıyoruz sonra kaydediyoruz
         return userRepository.save(user);
     }
 
-    public String verify(User user) {
+    public String verify(UserEntity user) {
         Authentication authenticate = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         user.getUsername(), user.getPassword()

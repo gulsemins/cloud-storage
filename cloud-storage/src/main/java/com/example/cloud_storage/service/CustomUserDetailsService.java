@@ -2,7 +2,7 @@ package com.example.cloud_storage.service;
 
 
 import com.example.cloud_storage.CustomUserDetails;
-import com.example.cloud_storage.entity.User;
+import com.example.cloud_storage.entity.UserEntity;
 import com.example.cloud_storage.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,7 +21,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        User user = userRepository.findByUsername(username);
+        UserEntity user = userRepository.findByUsername(username);
         if(Objects.isNull(user)){
             System.out.println("User not available");
             throw new UsernameNotFoundException("User not found");

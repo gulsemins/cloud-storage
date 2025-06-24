@@ -1,6 +1,6 @@
 package com.example.cloud_storage.service;
 
-import com.example.cloud_storage.entity.User;
+import com.example.cloud_storage.entity.UserEntity;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -11,7 +11,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
-import java.security.Key;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -28,7 +27,7 @@ public class JwtService {
         this.secretKey = secretKey;
     }
 
-    public String generateToken(User user) {
+    public String generateToken(UserEntity user) {
         //Token içine eklenecek ek bilgiler burd  TUTULUR
         Map<String, Object> claims = new HashMap<>();
 
