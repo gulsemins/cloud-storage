@@ -1,4 +1,6 @@
 package com.example.cloud_storage.controller;
+import com.example.cloud_storage.dtos.AuthResponseDto;
+import com.example.cloud_storage.dtos.LoginRequestDto;
 import com.example.cloud_storage.entity.UserEntity;
 import com.example.cloud_storage.repository.UserRepository;
 import com.example.cloud_storage.service.UserService;
@@ -23,9 +25,9 @@ public class UserController {
 
     }
     @PostMapping("/login")
-    public String login(@RequestBody UserEntity user){
+    public AuthResponseDto login(@RequestBody LoginRequestDto loginRequestDto){
 
-        return userService.verify(user);
+        return userService.login(loginRequestDto);
 
     }
 }

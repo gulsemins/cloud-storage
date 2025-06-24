@@ -1,4 +1,6 @@
 package com.example.cloud_storage.service;
+import com.example.cloud_storage.dtos.AuthResponseDto;
+import com.example.cloud_storage.dtos.LoginRequestDto;
 import com.example.cloud_storage.dtos.RegisterRequestDto;
 import com.example.cloud_storage.entity.UserEntity;
 import com.example.cloud_storage.mapper.UserMapper;
@@ -27,15 +29,18 @@ private final UserMapper userMapper;
         return userRepository.save(user);
     }
 
-    public String verify(UserEntity user) {
+    public AuthResponseDto login(LoginRequestDto loginRequestDto) {
         Authentication authenticate = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        user.getUsername(), user.getPassword()
+                        loginRequestDto.getUsername(), loginRequestDto.getPassword()
                 )
         );
         //     var u =  userRepository.findByUserName(user.getUserName());
-        if (authenticate.isAuthenticated())
-            return jwtService.generateToken(user);
-        return  "failure";
+        if (authenticate.isAuthenticated()){
+            UserEntity user = userRepository.findByUsername(loginRequestDto.getUsername());
+            String token = jwtService.generateToken(user);
+            return new AuthResponseDto(token);
+        }
+        throw new RuntimeException("Invalid login credentials");
     }
 }
