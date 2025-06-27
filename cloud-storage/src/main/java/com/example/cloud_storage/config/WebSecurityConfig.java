@@ -41,21 +41,6 @@ public class WebSecurityConfig {
 
         return httpSecurity.build();
     }
-    //@Bean //Metodun döndürdüğü nesne Spring container'a kaydedilir
-    public UserDetailsService userDetailService(){
-        UserDetails gulsemin
-                = User.withUsername("gulsemin")
-                .password("{noop}password")
-                .roles("USER")
-                .build();
-
-        UserDetails yukki
-                = User.withUsername("yukki")
-                .password("{noop}password")
-                .roles("USER")
-                .build();
-        return new InMemoryUserDetailsManager(gulsemin, yukki);
-    }
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
