@@ -32,6 +32,7 @@ public class UserEntity {
     @GenericGenerator(name = "uuid", strategy = "uuid2")
     private String id;
 
+    @Column(unique = true)
     private String username;
     private String email;
     private String password;

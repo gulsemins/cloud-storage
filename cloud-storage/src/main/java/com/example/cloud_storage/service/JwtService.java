@@ -27,16 +27,17 @@ public class JwtService {
         this.secretKey = secretKey;
     }
 
-    public String generateToken(UserEntity user) {
+    public String generateToken(String username) {
         //Token içine eklenecek ek bilgiler burd  TUTULUR
         Map<String, Object> claims = new HashMap<>();
+       // claims.put("id", user.getId());
 
         return Jwts.builder()//jwt builder nesnesi olşturuyor
                 .setClaims(claims)//token içerisine gömülecek ek bilgiler
-                .setSubject(user.getUsername())//Bu token'ın kime ait olduğunu belirtir. Genellikle kullanıcı adı verilir.
+                .setSubject(username)//Bu token'ın kime ait olduğunu belirtir. Genellikle kullanıcı adı verilir.
                 .setIssuer("yukki")//bu tokeni oluşturanlar kim
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 10)) // 10 dakika
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60*24*10)) // 10 gün
                 .signWith(generateKey(), SignatureAlgorithm.HS256)
                 .compact();// token stringe çevrilip döndürülüyor
     }

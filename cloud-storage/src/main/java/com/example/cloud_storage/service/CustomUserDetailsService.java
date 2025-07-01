@@ -2,8 +2,10 @@ package com.example.cloud_storage.service;
 
 
 import com.example.cloud_storage.CustomUserDetails;
+import com.example.cloud_storage.controller.UserController;
 import com.example.cloud_storage.entity.UserEntity;
 import com.example.cloud_storage.repository.UserRepository;
+import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -27,4 +29,6 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("User not found");
         }
         return new CustomUserDetails(user);
-    }}
+    }
+
+}

@@ -37,10 +37,17 @@ private final UserMapper userMapper;
         );
         //     var u =  userRepository.findByUserName(user.getUserName());
         if (authenticate.isAuthenticated()){
-            UserEntity user = userRepository.findByUsername(loginRequestDto.getUsername());
-            String token = jwtService.generateToken(user);
+
+            String token = jwtService.generateToken(loginRequestDto.getUsername());
             return new AuthResponseDto(token);
         }
         throw new RuntimeException("Invalid login credentials");
+    }
+
+    public UserEntity getUserById(String id){
+        return userRepository.findById(id);
+    }
+    public UserEntity getUserByUsername(String username){
+        return userRepository.findByUsername(username);
     }
 }
