@@ -12,6 +12,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @AllArgsConstructor
 @Service
 public class UserService {
@@ -45,7 +47,7 @@ private final UserMapper userMapper;
     }
 
     public UserEntity getUserById(String id){
-        return userRepository.findById(id);
+        return userRepository.findById(id).get();
     }
     public UserEntity getUserByUsername(String username){
         return userRepository.findByUsername(username);
