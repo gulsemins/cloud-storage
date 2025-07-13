@@ -1,6 +1,7 @@
 package com.example.cloud_storage.controller;
 
 import com.example.cloud_storage.CustomUserDetails;
+import com.example.cloud_storage.dtos.UploadedFileDto;
 import com.example.cloud_storage.entity.UploadedFileEntity;
 import com.example.cloud_storage.entity.UserEntity;
 import com.example.cloud_storage.service.FileService;
@@ -23,20 +24,20 @@ public class FileController {
     private final UserService userService;
 
     @PostMapping("/upload")
-    public ResponseEntity<UploadedFileEntity> uploadFile(@RequestParam("file") MultipartFile file,
+    public ResponseEntity<UploadedFileDto> uploadFile(@RequestParam("file") MultipartFile file,
                                                          @AuthenticationPrincipal CustomUserDetails  userDetails) throws IOException {
         String username = userDetails.getUsername();
         UserEntity user = userService.getUserByUsername(username);
-      UploadedFileEntity response = fileService.storeFile(file, user.getId());
+      UploadedFileDto response = fileService.storeFile(file, user.getId());
         return ResponseEntity.ok(response);
 
     }
 
     @GetMapping("/files")
-    public ResponseEntity<List<UploadedFileEntity>> getUserFiles( @AuthenticationPrincipal CustomUserDetails  userDetails){
+    public ResponseEntity<List<UploadedFileDto>> getUserFiles(@AuthenticationPrincipal CustomUserDetails  userDetails){
         String username = userDetails.getUsername();
         UserEntity user = userService.getUserByUsername(username);
-        List<UploadedFileEntity> files = user.getUploadedFiles();
+        List<UploadedFileDto> files = fileService.listFilesByUser(user.getId());
         return ResponseEntity.ok(files);
     }
 }

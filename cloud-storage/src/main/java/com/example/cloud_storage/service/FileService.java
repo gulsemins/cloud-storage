@@ -1,7 +1,9 @@
 package com.example.cloud_storage.service;
 
+import com.example.cloud_storage.dtos.UploadedFileDto;
 import com.example.cloud_storage.entity.UploadedFileEntity;
 import com.example.cloud_storage.entity.UserEntity;
+import com.example.cloud_storage.mapper.FileMapper;
 import com.example.cloud_storage.repository.FileRepository;
 import com.example.cloud_storage.repository.UserRepository;
 import lombok.AllArgsConstructor;
@@ -25,8 +27,9 @@ public class FileService {
 
     private final FileRepository fileRepository;
     private final UserRepository userRepository;
+    private final FileMapper fileMapper;
 
-    public UploadedFileEntity storeFile(MultipartFile file, String userId)throws IOException {
+    public UploadedFileDto storeFile(MultipartFile file, String userId)throws IOException {
         Path uploadDir = Paths.get("uploads");
         if (!Files.exists(uploadDir)) {
             Files.createDirectories(uploadDir);
@@ -45,11 +48,14 @@ public class FileService {
         uploadedFile.setUploadedAt(LocalDateTime.now());
         uploadedFile.setUser(user);
 
-        return fileRepository.save(uploadedFile);
+        UploadedFileEntity saved = fileRepository.save(uploadedFile);
+        return fileMapper.toUploadedFileDto(saved);
     }
 
-    public List<UploadedFileEntity> listFilesByUser(String userId) {
-        return fileRepository.findByUserId(userId);
+    public List<UploadedFileDto> listFilesByUser(String userId) {
+
+        List<UploadedFileEntity> files = fileRepository.findByUserId(userId);
+        return fileMapper.toDtoList(files);
     }
 }
 
