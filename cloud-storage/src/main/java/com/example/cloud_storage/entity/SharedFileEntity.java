@@ -7,31 +7,30 @@ import lombok.RequiredArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
 @Entity
 @RequiredArgsConstructor
 @AllArgsConstructor
 @Data
-public class UploadedFileEntity {
-
+public class SharedFileEntity {
     @Id
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "uuid2")
     private String id;
 
-    private String originalFileName;
-    private String storedFileName;
-    private String contentType;
-    private Long size;
-    private LocalDateTime uploadedAt;
+    @ManyToOne
+    @JoinColumn(name = "file_id")
+    private UploadedFileEntity file;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
+    @JoinColumn(name = "shared_by_user_id")
+    private UserEntity sharedBy;
 
-    @OneToMany(mappedBy = "file", cascade = CascadeType.ALL)
-    private List<SharedFileEntity> sharedFiles = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "shared_with_user_id")
+    private UserEntity sharedWith;
 
+    private LocalDateTime sharedAt;
+
+    // (İsteğe bağlı) Yetki seviyesi: sadece görüntüleme mi, düzenleme mi?
+    //private String permission;
 }

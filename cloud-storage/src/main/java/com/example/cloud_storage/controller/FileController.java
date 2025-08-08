@@ -1,6 +1,7 @@
 package com.example.cloud_storage.controller;
 
 import com.example.cloud_storage.CustomUserDetails;
+import com.example.cloud_storage.dtos.SharedFileDto;
 import com.example.cloud_storage.dtos.UploadedFileDto;
 import com.example.cloud_storage.entity.UploadedFileEntity;
 import com.example.cloud_storage.entity.UserEntity;
@@ -59,4 +60,16 @@ public class FileController {
         String username = userDetails.getUsername();
         UserEntity user = userService.getUserByUsername(username);
         return fileService.downloadFile(fileId, user);
-}}
+}
+    @PostMapping("/share")
+    public ResponseEntity<SharedFileDto> shareFile(@RequestBody SharedFileDto sharedFile, @AuthenticationPrincipal CustomUserDetails  userDetails)throws IOException{
+
+        String username = userDetails.getUsername();
+        UserEntity user = userService.getUserByUsername(username);
+        return fileService.shareFile(sharedFile, user.getId());
+    }
+
+}
+
+
+
