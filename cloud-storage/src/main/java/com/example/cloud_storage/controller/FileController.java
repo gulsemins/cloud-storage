@@ -68,6 +68,13 @@ public class FileController {
         UserEntity user = userService.getUserByUsername(username);
         return fileService.shareFile(sharedFile, user.getId());
     }
+    @GetMapping("/shared-with-me")
+    public List<SharedFileDto> getSharedWithMeFiles( @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException{
+
+        String username = userDetails.getUsername();
+        UserEntity user = userService.getUserByUsername(username);
+        return fileService.getSharedWithFiles(user.getId());
+    }
 
 }
 

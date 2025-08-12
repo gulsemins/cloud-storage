@@ -25,6 +25,9 @@ public class UserService {
 private final UserMapper userMapper;
 
     public UserEntity signup(RegisterRequestDto registerRequestDto) {
+        if (userRepository.existsByUsername(registerRequestDto.getUsername())) {
+            throw new IllegalArgumentException("Username already exists");
+        }
         UserEntity user = userMapper.toEntity(registerRequestDto);
         user.setPassword(bCryptPasswordEncoder
                 .encode(registerRequestDto.getPassword())); //önce user passwoedunu encrypted yapıyoruz sonra kaydediyoruz

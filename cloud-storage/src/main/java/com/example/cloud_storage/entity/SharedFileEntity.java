@@ -32,5 +32,5 @@ public class SharedFileEntity {
     private LocalDateTime sharedAt;
 
     // (İsteğe bağlı) Yetki seviyesi: sadece görüntüleme mi, düzenleme mi?
-    //private String permission;
+    //p brivate String permission;
 }

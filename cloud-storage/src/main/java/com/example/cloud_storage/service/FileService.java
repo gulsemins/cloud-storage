@@ -110,4 +110,9 @@ public class FileService {
 
         return  ResponseEntity.ok(fileMapper.toSharedFileDto(saved));
     }
+    public List<SharedFileDto> getSharedWithFiles(String userId)throws IOException{
+        List<SharedFileEntity> sharedWithFiles = sharedFileRepository.findBySharedWithId(userId) ;
+
+        return fileMapper.toSharedFileDtoList(sharedWithFiles);
+    }
     }

@@ -19,4 +19,10 @@ public interface FileMapper {
     @Mapping(target = "fileId", source = "file.id")
     @Mapping(target = "sharedWithUsername", source = "sharedWith.username")
     SharedFileDto toSharedFileDto(SharedFileEntity entity);
+
+    @Mapping(target = "fileId", source = "file.id")
+    @Mapping(target = "sharedWithUsername", source = "sharedWith.username")
+    List<SharedFileDto> toSharedFileDtoList(List<SharedFileEntity> entities);
 }
+
+
