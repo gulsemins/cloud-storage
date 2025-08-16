@@ -2,6 +2,7 @@ package com.example.cloud_storage.service;
 import com.example.cloud_storage.dtos.AuthResponseDto;
 import com.example.cloud_storage.dtos.LoginRequestDto;
 import com.example.cloud_storage.dtos.RegisterRequestDto;
+import com.example.cloud_storage.dtos.RegisterResponseDto;
 import com.example.cloud_storage.entity.UserEntity;
 import com.example.cloud_storage.mapper.UserMapper;
 import com.example.cloud_storage.repository.UserRepository;
@@ -22,16 +23,17 @@ public class UserService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
-private final UserMapper userMapper;
+    private final UserMapper userMapper;
 
-    public UserEntity signup(RegisterRequestDto registerRequestDto) {
+
+    public RegisterResponseDto signup(RegisterRequestDto registerRequestDto) {
         if (userRepository.existsByUsername(registerRequestDto.getUsername())) {
             throw new IllegalArgumentException("Username already exists");
         }
         UserEntity user = userMapper.toEntity(registerRequestDto);
         user.setPassword(bCryptPasswordEncoder
                 .encode(registerRequestDto.getPassword())); //önce user passwoedunu encrypted yapıyoruz sonra kaydediyoruz
-        return userRepository.save(user);
+        return userMapper.toRegisterResponseDto(userRepository.save(user));
     }
 
     public AuthResponseDto login(LoginRequestDto loginRequestDto) {

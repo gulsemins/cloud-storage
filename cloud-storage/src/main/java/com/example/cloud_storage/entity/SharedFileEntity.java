@@ -4,9 +4,12 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
+import java.util.Date;
+
 @Entity
 @RequiredArgsConstructor
 @AllArgsConstructor
@@ -29,7 +32,10 @@ public class SharedFileEntity {
     @JoinColumn(name = "shared_with_user_id")
     private UserEntity sharedWith;
 
-    private LocalDateTime sharedAt;
+    @Column(name = "created_at")
+    @CreationTimestamp
+    private Date createdAt;
+
 
     // (İsteğe bağlı) Yetki seviyesi: sadece görüntüleme mi, düzenleme mi?
     //p brivate String permission;

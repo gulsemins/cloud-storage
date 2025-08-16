@@ -1,13 +1,16 @@
 package com.example.cloud_storage.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -32,6 +35,12 @@ public class UploadedFileEntity {
     private UserEntity user;
 
     @OneToMany(mappedBy = "file", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<SharedFileEntity> sharedFiles = new ArrayList<>();
+
+    @Column(name = "created_at")
+    @CreationTimestamp
+    private Date createdAt;
+
 
 }

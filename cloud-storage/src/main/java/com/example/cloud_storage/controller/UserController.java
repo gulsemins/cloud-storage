@@ -1,6 +1,7 @@
 package com.example.cloud_storage.controller;
 import com.example.cloud_storage.dtos.AuthResponseDto;
 import com.example.cloud_storage.dtos.LoginRequestDto;
+import com.example.cloud_storage.dtos.RegisterResponseDto;
 import com.example.cloud_storage.entity.UserEntity;
 import com.example.cloud_storage.repository.UserRepository;
 import com.example.cloud_storage.service.UserService;
@@ -18,7 +19,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/signup")
-    public UserEntity signup(@RequestBody RegisterRequestDto registerRequestDto){
+    public RegisterResponseDto signup(@RequestBody RegisterRequestDto registerRequestDto){
         //return userRepository.save(user);
 
         return userService.signup(registerRequestDto);

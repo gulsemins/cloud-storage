@@ -1,7 +1,9 @@
 package com.example.cloud_storage.service;
 
 import com.example.cloud_storage.dtos.SharedFileDto;
+import com.example.cloud_storage.dtos.SharedFileResponseDto;
 import com.example.cloud_storage.dtos.UploadedFileDto;
+import com.example.cloud_storage.dtos.UploadedFileResponseDto;
 import com.example.cloud_storage.entity.SharedFileEntity;
 import com.example.cloud_storage.entity.UploadedFileEntity;
 import com.example.cloud_storage.entity.UserEntity;
@@ -40,7 +42,7 @@ public class FileService {
     private final SharedFileRepository sharedFileRepository;
     private final FileMapper fileMapper;
 
-    public UploadedFileDto storeFile(MultipartFile file, String userId)throws IOException {
+    public UploadedFileResponseDto storeFile(MultipartFile file, String userId) throws IOException {
         Path uploadDir = Paths.get("uploads");
         if (!Files.exists(uploadDir)) {
             Files.createDirectories(uploadDir);
@@ -56,31 +58,32 @@ public class FileService {
         uploadedFile.setOriginalFileName(file.getOriginalFilename());
         uploadedFile.setStoredFileName(storedFileName);
         uploadedFile.setSize(file.getSize());
+        //TODO: delete this and use decorator instead
         uploadedFile.setUploadedAt(LocalDateTime.now());
         uploadedFile.setUser(user);
 
         UploadedFileEntity saved = fileRepository.save(uploadedFile);
-        return fileMapper.toUploadedFileDto(saved);
+        return fileMapper.toUploadedFileResponseDto(saved);
     }
 
-    public List<UploadedFileDto> listFilesByUser(String userId) {
+    public List<UploadedFileResponseDto> listFilesByUser(String userId) {
 
         List<UploadedFileEntity> files = fileRepository.findByUserId(userId);
-        return fileMapper.toDtoList(files);
+        return fileMapper.toUploadedFileResponseDtoList(files);
     }
 
-    public ResponseEntity<Resource> downloadFile (String fileId, UserEntity user) throws IOException{
+    public ResponseEntity<Resource> downloadFile(String fileId, UserEntity user) throws IOException {
 
         UploadedFileEntity file = fileRepository.findById(fileId)
                 .orElseThrow(() -> new RuntimeException("File not found"));
 
-        String userId= user.getId();
-        if (!file.getUser().getId().equals(userId)){
+        String userId = user.getId();
+        if (!file.getUser().getId().equals(userId)) {
             throw new RuntimeException("Unauthorized access");
         }
 
         Path filePath = Paths.get("uploads", file.getStoredFileName());
-        if (!Files.exists(filePath)){
+        if (!Files.exists(filePath)) {
             throw new RuntimeException("File not found on disk");
         }
 
@@ -93,13 +96,13 @@ public class FileService {
                 .body(resource);
     }
 
-    public ResponseEntity<SharedFileDto> shareFile(SharedFileDto sharedFileDto, String userId) throws IOException{
+    public ResponseEntity<SharedFileResponseDto> shareFile(SharedFileDto sharedFileDto, String userId) throws IOException {
         UserEntity sharedBy = userRepository.findById(userId).orElseThrow(() -> new UsernameNotFoundException("User not found"));
         UserEntity sharedWith = userRepository.findByUsername(sharedFileDto.getSharedWithUsername());
-        if(sharedWith==null){
+        if (sharedWith == null) {
             throw new UsernameNotFoundException("Shared-with user not found");
         }
-        UploadedFileEntity sharedFile = fileRepository.findById(sharedFileDto.getFileId()) .orElseThrow(() -> new RuntimeException("File not found"));
+        UploadedFileEntity sharedFile = fileRepository.findById(sharedFileDto.getFileId()).orElseThrow(() -> new RuntimeException("File not found"));
 
         SharedFileEntity saveSharedFile = new SharedFileEntity();
         saveSharedFile.setSharedWith(sharedWith);
@@ -108,11 +111,11 @@ public class FileService {
 
         SharedFileEntity saved = sharedFileRepository.save(saveSharedFile);
 
-        return  ResponseEntity.ok(fileMapper.toSharedFileDto(saved));
+        return ResponseEntity.ok(fileMapper.tosharedfileResponseDto(saved));
     }
-    public List<SharedFileDto> getSharedWithFiles(String userId)throws IOException{
-        List<SharedFileEntity> sharedWithFiles = sharedFileRepository.findBySharedWithId(userId) ;
 
-        return fileMapper.toSharedFileDtoList(sharedWithFiles);
+    public List<SharedFileResponseDto> getSharedWithFiles(String userId) throws IOException {
+
+        return fileMapper.toSharedFileResponseDtoList(sharedFileRepository.findBySharedWithId(userId));
     }
-    }
+}
