@@ -58,8 +58,6 @@ public class FileService {
         uploadedFile.setOriginalFileName(file.getOriginalFilename());
         uploadedFile.setStoredFileName(storedFileName);
         uploadedFile.setSize(file.getSize());
-        //TODO: delete this and use decorator instead
-        uploadedFile.setUploadedAt(LocalDateTime.now());
         uploadedFile.setUser(user);
 
         UploadedFileEntity saved = fileRepository.save(uploadedFile);

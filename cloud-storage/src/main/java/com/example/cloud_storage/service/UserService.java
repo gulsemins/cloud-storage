@@ -2,7 +2,7 @@ package com.example.cloud_storage.service;
 import com.example.cloud_storage.dtos.AuthResponseDto;
 import com.example.cloud_storage.dtos.LoginRequestDto;
 import com.example.cloud_storage.dtos.RegisterRequestDto;
-import com.example.cloud_storage.dtos.RegisterResponseDto;
+import com.example.cloud_storage.dtos.UserResponseDto;
 import com.example.cloud_storage.entity.UserEntity;
 import com.example.cloud_storage.mapper.UserMapper;
 import com.example.cloud_storage.repository.UserRepository;
@@ -12,8 +12,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
 
 @AllArgsConstructor
 @Service
@@ -26,7 +24,7 @@ public class UserService {
     private final UserMapper userMapper;
 
 
-    public RegisterResponseDto signup(RegisterRequestDto registerRequestDto) {
+    public UserResponseDto signup(RegisterRequestDto registerRequestDto) {
         if (userRepository.existsByUsername(registerRequestDto.getUsername())) {
             throw new IllegalArgumentException("Username already exists");
         }

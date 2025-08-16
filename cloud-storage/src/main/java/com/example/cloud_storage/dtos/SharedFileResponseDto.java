@@ -15,9 +15,9 @@ import java.util.Date;
 public class SharedFileResponseDto {
 
     private String id;
-    private UploadedFileDto file;
-    private UserEntity sharedBy;
-    private UserEntity sharedWith;
+    private UploadedFileResponseDto file;
+    private UserResponseDto sharedBy;
+    private UserResponseDto sharedWith;
     private Date createdAt;
 
 }

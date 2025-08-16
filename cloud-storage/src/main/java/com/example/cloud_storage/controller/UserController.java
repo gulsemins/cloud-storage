@@ -1,8 +1,7 @@
 package com.example.cloud_storage.controller;
 import com.example.cloud_storage.dtos.AuthResponseDto;
 import com.example.cloud_storage.dtos.LoginRequestDto;
-import com.example.cloud_storage.dtos.RegisterResponseDto;
-import com.example.cloud_storage.entity.UserEntity;
+import com.example.cloud_storage.dtos.UserResponseDto;
 import com.example.cloud_storage.repository.UserRepository;
 import com.example.cloud_storage.service.UserService;
 import lombok.AllArgsConstructor;
@@ -19,7 +18,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/signup")
-    public RegisterResponseDto signup(@RequestBody RegisterRequestDto registerRequestDto){
+    public UserResponseDto signup(@RequestBody RegisterRequestDto registerRequestDto){
         //return userRepository.save(user);
 
         return userService.signup(registerRequestDto);

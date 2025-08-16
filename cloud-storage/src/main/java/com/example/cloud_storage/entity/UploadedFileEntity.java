@@ -28,6 +28,9 @@ public class UploadedFileEntity {
     private String storedFileName;
     private String contentType;
     private Long size;
+
+    @Column(name = "uploaded_at")
+    @CreationTimestamp
     private LocalDateTime uploadedAt;
 
     @ManyToOne
