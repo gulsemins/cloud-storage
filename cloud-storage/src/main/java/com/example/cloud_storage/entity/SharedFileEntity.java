@@ -36,7 +36,4 @@ public class SharedFileEntity {
     @CreationTimestamp
     private Date createdAt;
 
-
-    // (İsteğe bağlı) Yetki seviyesi: sadece görüntüleme mi, düzenleme mi?
-    //p brivate String permission;
 }

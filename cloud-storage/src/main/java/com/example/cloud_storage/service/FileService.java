@@ -17,13 +17,16 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -42,6 +45,8 @@ public class FileService {
     private final SharedFileRepository sharedFileRepository;
     private final FileMapper fileMapper;
 
+    private final String bucketUrl = "https://cloudstorage-springboot-s3.s3.amazonaws.com/";
+
     public UploadedFileResponseDto storeFile(MultipartFile file, String userId) throws IOException {
         Path uploadDir = Paths.get("uploads");
         if (!Files.exists(uploadDir)) {
@@ -53,6 +58,29 @@ public class FileService {
 
         Path filepath = Paths.get("uploads", storedFileName);
         Files.copy(file.getInputStream(), filepath, StandardCopyOption.REPLACE_EXISTING);
+
+        // === 2. S3’e de kaydet (yeni eklenen kısım) ===
+        try {
+            String bucketUrl = "https://cloudstorage-springboot-s3.s3.amazonaws.com/" + storedFileName;
+
+            RestTemplate restTemplate = new RestTemplate();
+            RequestEntity<byte[]> request = RequestEntity
+                    .put(new URI(bucketUrl))
+                    .header(HttpHeaders.CONTENT_TYPE, file.getContentType())
+                    .body(file.getBytes());
+
+            ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                System.out.println("S3 upload successful: " + bucketUrl);
+            } else {
+                System.out.println("S3 upload failed: " + response.getStatusCode());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("S3 upload error: " + e.getMessage());
+        }
+
 
         UploadedFileEntity uploadedFile = new UploadedFileEntity();
         uploadedFile.setOriginalFileName(file.getOriginalFilename());
