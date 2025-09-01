@@ -48,18 +48,17 @@ public class FileService {
     private final String bucketUrl = "https://cloudstorage-springboot-s3.s3.amazonaws.com/";
 
     public UploadedFileResponseDto storeFile(MultipartFile file, String userId) throws IOException {
-        Path uploadDir = Paths.get("uploads");
-        if (!Files.exists(uploadDir)) {
-            Files.createDirectories(uploadDir);
-        }
+     //   Path uploadDir = Paths.get("uploads");
+      //  if (!Files.exists(uploadDir)) {
+      //      Files.createDirectories(uploadDir);
+      //  }
         UserEntity user = userRepository.findById(userId).get();
 
         String storedFileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
 
-        Path filepath = Paths.get("uploads", storedFileName);
-        Files.copy(file.getInputStream(), filepath, StandardCopyOption.REPLACE_EXISTING);
+      //  Path filepath = Paths.get("uploads", storedFileName);
+     //   Files.copy(file.getInputStream(), filepath, StandardCopyOption.REPLACE_EXISTING);
 
-        // === 2. S3’e de kaydet (yeni eklenen kısım) ===
         try {
             String bucketUrl = "https://cloudstorage-springboot-s3.s3.amazonaws.com/" + storedFileName;
 
@@ -87,6 +86,7 @@ public class FileService {
         uploadedFile.setStoredFileName(storedFileName);
         uploadedFile.setSize(file.getSize());
         uploadedFile.setUser(user);
+        uploadedFile.setContentType(file.getContentType());
 
         UploadedFileEntity saved = fileRepository.save(uploadedFile);
         return fileMapper.toUploadedFileResponseDto(saved);
@@ -103,23 +103,46 @@ public class FileService {
         UploadedFileEntity file = fileRepository.findById(fileId)
                 .orElseThrow(() -> new RuntimeException("File not found"));
 
+
         String userId = user.getId();
-        if (!file.getUser().getId().equals(userId)) {
+
+        boolean isOwner = file.getUser().getId().equals(userId);
+
+        boolean isSharedWith = sharedFileRepository.existsByFileIdAndSharedWithId(fileId, userId);
+
+
+        if (!isOwner && !isSharedWith) {
             throw new RuntimeException("Unauthorized access");
         }
 
-        Path filePath = Paths.get("uploads", file.getStoredFileName());
-        if (!Files.exists(filePath)) {
-            throw new RuntimeException("File not found on disk");
-        }
+        // Build the public S3 URL
+        String fileUrl = "https://cloudstorage-springboot-s3.s3.amazonaws.com/" + file.getStoredFileName();
 
-        Resource resource = new UrlResource(filePath.toUri());
-        String contentType = Files.probeContentType(Paths.get(file.getOriginalFileName()));
+        // Create a Resource from the URL
+        UrlResource resource = new UrlResource(fileUrl);
+
+        if (!resource.exists()) {
+            throw new RuntimeException("File not found in S3");
+        }
+        //Path filePath = Paths.get("uploads", file.getStoredFileName());
+        //if (!Files.exists(filePath)) {
+        //  throw new RuntimeException("File not found on disk");
+        //}
+
+        //Resource resource = new UrlResource(filePath.toUri());
+        //String contentType = Files.probeContentType(Paths.get(file.getOriginalFileName()));
+
+        String contentType = file.getContentType();
+
+        // Eğer contentType veritabanında null ise, varsayılan bir değer ata.
+        if (contentType == null || contentType.isBlank()) {
+            contentType = "application/octet-stream";
+        }
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType)) //dosya tipine göre dinamik görüntülemek için:
-                .header(HttpHeaders.CONTENT_DISPOSITION, //browsera bu dosyayla ne yapılack diye haber verir
-                        "attachment; filename=\"" + file.getOriginalFileName() + "\"") //attachment = "Bu dosyayı download et" inline = "Bu dosyayı browser'da göster" (alternatif)
-                .body(resource);
+          .contentType(MediaType.parseMediaType(contentType)) //dosya tipine göre dinamik görüntülemek için:
+             .header(HttpHeaders.CONTENT_DISPOSITION, //browsera bu dosyayla ne yapılack diye haber verir
+                   "attachment; filename=\"" + file.getOriginalFileName() + "\"") //attachment = "Bu dosyayı download et" inline = "Bu dosyayı browser'da göster" (alternatif)
+            .body(resource);
     }
 
     public ResponseEntity<SharedFileResponseDto> shareFile(SharedFileDto sharedFileDto, String userId) throws IOException {

@@ -8,4 +8,6 @@ import java.util.List;
 public interface SharedFileRepository extends JpaRepository <SharedFileEntity, String >{
     List<SharedFileEntity> findBySharedWithId(String id);
 
+    boolean existsByFileIdAndSharedWithId(String fileId, String sharedWithId);
+
 }
