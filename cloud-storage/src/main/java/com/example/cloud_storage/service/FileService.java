@@ -2,7 +2,6 @@ package com.example.cloud_storage.service;
 
 import com.example.cloud_storage.dtos.SharedFileDto;
 import com.example.cloud_storage.dtos.SharedFileResponseDto;
-import com.example.cloud_storage.dtos.UploadedFileDto;
 import com.example.cloud_storage.dtos.UploadedFileResponseDto;
 import com.example.cloud_storage.entity.SharedFileEntity;
 import com.example.cloud_storage.entity.UploadedFileEntity;
@@ -12,26 +11,18 @@ import com.example.cloud_storage.repository.FileRepository;
 import com.example.cloud_storage.repository.SharedFileRepository;
 import com.example.cloud_storage.repository.UserRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.time.LocalDateTime;
+import java.net.URL;
+import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,8 +35,7 @@ public class FileService {
     private final UserRepository userRepository;
     private final SharedFileRepository sharedFileRepository;
     private final FileMapper fileMapper;
-
-    private final String bucketUrl = "https://cloudstorage-springboot-s3.s3.amazonaws.com/";
+    private final S3Service s3Service;
 
     public UploadedFileResponseDto storeFile(MultipartFile file, String userId) throws IOException {
      //   Path uploadDir = Paths.get("uploads");
@@ -56,29 +46,9 @@ public class FileService {
 
         String storedFileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
 
+        s3Service.uploadFile(file, storedFileName);
       //  Path filepath = Paths.get("uploads", storedFileName);
      //   Files.copy(file.getInputStream(), filepath, StandardCopyOption.REPLACE_EXISTING);
-
-        try {
-            String bucketUrl = "https://cloudstorage-springboot-s3.s3.amazonaws.com/" + storedFileName;
-
-            RestTemplate restTemplate = new RestTemplate();
-            RequestEntity<byte[]> request = RequestEntity
-                    .put(new URI(bucketUrl))
-                    .header(HttpHeaders.CONTENT_TYPE, file.getContentType())
-                    .body(file.getBytes());
-
-            ResponseEntity<String> response = restTemplate.exchange(request, String.class);
-
-            if (response.getStatusCode().is2xxSuccessful()) {
-                System.out.println("S3 upload successful: " + bucketUrl);
-            } else {
-                System.out.println("S3 upload failed: " + response.getStatusCode());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("S3 upload error: " + e.getMessage());
-        }
 
 
         UploadedFileEntity uploadedFile = new UploadedFileEntity();
@@ -115,15 +85,14 @@ public class FileService {
             throw new RuntimeException("Unauthorized access");
         }
 
-        // Build the public S3 URL
-        String fileUrl = "https://cloudstorage-springboot-s3.s3.amazonaws.com/" + file.getStoredFileName();
+        //  S3'ten pre-signed URL üret
+        URL presignedUrl = s3Service.generatePresignedUrl(file.getStoredFileName(), Duration.ofMinutes(30));
 
-        // Create a Resource from the URL
-        UrlResource resource = new UrlResource(fileUrl);
+        //  Resource oluştur
+        UrlResource resource = new UrlResource(presignedUrl);
 
-        if (!resource.exists()) {
-            throw new RuntimeException("File not found in S3");
-        }
+
+
         //Path filePath = Paths.get("uploads", file.getStoredFileName());
         //if (!Files.exists(filePath)) {
         //  throw new RuntimeException("File not found on disk");
@@ -134,10 +103,7 @@ public class FileService {
 
         String contentType = file.getContentType();
 
-        // Eğer contentType veritabanında null ise, varsayılan bir değer ata.
-        if (contentType == null || contentType.isBlank()) {
-            contentType = "application/octet-stream";
-        }
+
         return ResponseEntity.ok()
           .contentType(MediaType.parseMediaType(contentType)) //dosya tipine göre dinamik görüntülemek için:
              .header(HttpHeaders.CONTENT_DISPOSITION, //browsera bu dosyayla ne yapılack diye haber verir
