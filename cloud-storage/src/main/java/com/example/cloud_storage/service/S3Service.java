@@ -64,4 +64,15 @@ public class S3Service {
         return presignedRequest.url();
     }
 
+    public void createFolder(String folderKey) {
+        s3Client.putObject(
+                PutObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(folderKey)
+                        .contentLength(0L)
+                        .build(),
+                RequestBody.fromBytes(new byte[0])
+        );
+    }
+
 }

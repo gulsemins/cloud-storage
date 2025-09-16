@@ -41,9 +41,14 @@ public class UploadedFileEntity {
     @JsonIgnore
     private List<SharedFileEntity> sharedFiles = new ArrayList<>();
 
+    @ManyToOne
+    @JoinColumn(name="folder_id", nullable = true)
+    private FolderEntity folder;
+
     @Column(name = "created_at")
     @CreationTimestamp
     private Date createdAt;
+
 
 
 }

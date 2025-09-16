@@ -3,13 +3,16 @@ package com.example.cloud_storage.service;
 import com.example.cloud_storage.dtos.SharedFileDto;
 import com.example.cloud_storage.dtos.SharedFileResponseDto;
 import com.example.cloud_storage.dtos.UploadedFileResponseDto;
+import com.example.cloud_storage.entity.FolderEntity;
 import com.example.cloud_storage.entity.SharedFileEntity;
 import com.example.cloud_storage.entity.UploadedFileEntity;
 import com.example.cloud_storage.entity.UserEntity;
 import com.example.cloud_storage.mapper.FileMapper;
 import com.example.cloud_storage.repository.FileRepository;
+import com.example.cloud_storage.repository.FolderRepository;
 import com.example.cloud_storage.repository.SharedFileRepository;
 import com.example.cloud_storage.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -36,27 +39,48 @@ public class FileService {
     private final SharedFileRepository sharedFileRepository;
     private final FileMapper fileMapper;
     private final S3Service s3Service;
+    private final FolderRepository folderRepository; // Klasör bulmak için hala gerekli
+    private final FolderService folderService;
 
-    public UploadedFileResponseDto storeFile(MultipartFile file, String userId) throws IOException {
+    public UploadedFileResponseDto storeFile(MultipartFile file, String userId, String folderId) throws IOException {
      //   Path uploadDir = Paths.get("uploads");
       //  if (!Files.exists(uploadDir)) {
       //      Files.createDirectories(uploadDir);
       //  }
         UserEntity user = userRepository.findById(userId).get();
 
+        FolderEntity parentFolder = null;
+        String s3PathPrefix = user.getId() + "/";
+
+        if (folderId != null && !folderId.isEmpty()) {
+            parentFolder = folderRepository.findById(folderId)
+                    .orElseThrow(() -> new EntityNotFoundException("Folder not found"));
+            if (!parentFolder.getUser().getId().equals(userId)) {
+                throw new SecurityException("Access denied to this folder");
+            }
+            s3PathPrefix = folderService.buildS3PathForFolder(parentFolder);
+        }
+
         String storedFileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
 
-        s3Service.uploadFile(file, storedFileName);
+        String fullS3Key = s3PathPrefix + storedFileName;
+
+       // s3Service.uploadFile(file, storedFileName);
+        s3Service.uploadFile(file, fullS3Key);
+
+
       //  Path filepath = Paths.get("uploads", storedFileName);
      //   Files.copy(file.getInputStream(), filepath, StandardCopyOption.REPLACE_EXISTING);
 
 
         UploadedFileEntity uploadedFile = new UploadedFileEntity();
         uploadedFile.setOriginalFileName(file.getOriginalFilename());
-        uploadedFile.setStoredFileName(storedFileName);
+        uploadedFile.setStoredFileName(fullS3Key);
+        //uploadedFile.setStoredFileName(storedFileName);
         uploadedFile.setSize(file.getSize());
         uploadedFile.setUser(user);
         uploadedFile.setContentType(file.getContentType());
+        uploadedFile.setFolder(parentFolder);
 
         UploadedFileEntity saved = fileRepository.save(uploadedFile);
         return fileMapper.toUploadedFileResponseDto(saved);

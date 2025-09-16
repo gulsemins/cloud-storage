@@ -1,15 +1,15 @@
 package com.example.cloud_storage.controller;
 
 import com.example.cloud_storage.CustomUserDetails;
-import com.example.cloud_storage.dtos.SharedFileDto;
-import com.example.cloud_storage.dtos.SharedFileResponseDto;
-import com.example.cloud_storage.dtos.UploadedFileResponseDto;
+import com.example.cloud_storage.dtos.*;
 import com.example.cloud_storage.entity.UserEntity;
 import com.example.cloud_storage.repository.FileRepository;
 import com.example.cloud_storage.service.FileService;
+import com.example.cloud_storage.service.FolderService;
 import com.example.cloud_storage.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -25,15 +25,29 @@ public class FileController {
     private final FileService fileService;
     private final UserService userService;
     private final FileRepository fileRepository;
+    private final FolderService folderService;
 
     @PostMapping("/upload")
     public ResponseEntity<UploadedFileResponseDto> uploadFile(@RequestParam("file") MultipartFile file,
+                                                              @RequestParam(required = false) String folderId,
                                                               @AuthenticationPrincipal CustomUserDetails  userDetails) throws IOException {
         String username = userDetails.getUsername();
         UserEntity user = userService.getUserByUsername(username);
-      UploadedFileResponseDto response = fileService.storeFile(file, user.getId());
+      UploadedFileResponseDto response = fileService.storeFile(file, user.getId(), folderId);
         return ResponseEntity.ok(response);
 
+    }
+
+    @PostMapping("/folders")
+    public ResponseEntity<CreateFolderResponseDto> createFolder(
+            @RequestBody CreateFolderRequestDto request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ){
+        String username = userDetails.getUsername();
+        UserEntity user = userService.getUserByUsername(username);
+
+        CreateFolderResponseDto response = folderService.createFolder(request, user.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/files")
