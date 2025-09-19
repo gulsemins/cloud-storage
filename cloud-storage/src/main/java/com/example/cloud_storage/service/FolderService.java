@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -56,6 +57,12 @@ public class FolderService {
 
         List<FolderEntity> folders = folderRepository.findByUserId(userId);
         return folderMapper.toFolderDtoList(folders);
+    }
+
+    public List<GetFolderResponseDto> listSubFolders(String id){
+        List<FolderEntity> subFolders = folderRepository.findByParentFolderId(id);
+
+        return folderMapper.toFolderDtoList(subFolders);
     }
 
     public String buildS3PathForFolder(FolderEntity folder) {

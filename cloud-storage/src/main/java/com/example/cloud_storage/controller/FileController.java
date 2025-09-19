@@ -59,6 +59,12 @@ public class FileController {
         return ResponseEntity.ok(folders);
 
     }
+    @GetMapping("/subFolders/{id}")
+        public ResponseEntity<List<GetFolderResponseDto>> getSubFolders(@PathVariable String id){
+            List<GetFolderResponseDto> subFolders = folderService.listSubFolders(id);
+        return ResponseEntity.ok(subFolders);
+    }
+
     @GetMapping("/files")
     public ResponseEntity<List<UploadedFileResponseDto>> getUserFiles(@AuthenticationPrincipal CustomUserDetails  userDetails){
         String username = userDetails.getUsername();
