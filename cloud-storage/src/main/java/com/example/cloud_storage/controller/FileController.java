@@ -38,22 +38,32 @@ public class FileController {
 
     }
 
-    @PostMapping("/folders")
+    @PostMapping("/createFolders")
     public ResponseEntity<CreateFolderResponseDto> createFolder(
             @RequestBody CreateFolderRequestDto request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ){
-        String username = userDetails.getUsername();
-        UserEntity user = userService.getUserByUsername(username);
+
+        UserEntity user = userService.getUserByUsername(userDetails.getUsername());
 
         CreateFolderResponseDto response = folderService.createFolder(request, user.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @GetMapping("/folders")
+    public ResponseEntity<List<GetFolderResponseDto>> listFoldersByUser(@AuthenticationPrincipal CustomUserDetails  userDetails){
+        String username = userDetails.getUsername();
+        UserEntity user = userService.getUserByUsername(username);
+
+        List<GetFolderResponseDto> folders = folderService.listFoldersByUser(user.getId());
+        return ResponseEntity.ok(folders);
+
+    }
     @GetMapping("/files")
     public ResponseEntity<List<UploadedFileResponseDto>> getUserFiles(@AuthenticationPrincipal CustomUserDetails  userDetails){
         String username = userDetails.getUsername();
         UserEntity user = userService.getUserByUsername(username);
+
         List<UploadedFileResponseDto> files = fileService.listFilesByUser(user.getId());
         return ResponseEntity.ok(files);
     }

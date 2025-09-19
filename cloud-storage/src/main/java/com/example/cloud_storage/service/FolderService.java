@@ -2,6 +2,7 @@ package com.example.cloud_storage.service;
 
 import com.example.cloud_storage.dtos.CreateFolderRequestDto;
 import com.example.cloud_storage.dtos.CreateFolderResponseDto;
+import com.example.cloud_storage.dtos.GetFolderResponseDto;
 import com.example.cloud_storage.entity.FolderEntity;
 import com.example.cloud_storage.entity.UserEntity;
 import com.example.cloud_storage.mapper.FolderMapper;
@@ -10,6 +11,8 @@ import com.example.cloud_storage.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -47,6 +50,12 @@ public class FolderService {
         String s3FolderKey = buildS3PathForFolder(savedFolder);
         s3Service.createFolder(s3FolderKey);
         return folderMapper.toFolderResponseDto(savedFolder);
+    }
+
+    public List<GetFolderResponseDto> listFoldersByUser(String userId){
+
+        List<FolderEntity> folders = folderRepository.findByUserId(userId);
+        return folderMapper.toFolderDtoList(folders);
     }
 
     public String buildS3PathForFolder(FolderEntity folder) {
