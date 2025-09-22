@@ -1,31 +1,31 @@
 package com.example.cloud_storage.service;
 
+import com.example.cloud_storage.dtos.PublicSharedFileResponseDto;
 import com.example.cloud_storage.dtos.SharedFileDto;
 import com.example.cloud_storage.dtos.SharedFileResponseDto;
 import com.example.cloud_storage.dtos.UploadedFileResponseDto;
-import com.example.cloud_storage.entity.FolderEntity;
-import com.example.cloud_storage.entity.SharedFileEntity;
-import com.example.cloud_storage.entity.UploadedFileEntity;
-import com.example.cloud_storage.entity.UserEntity;
+import com.example.cloud_storage.entity.*;
 import com.example.cloud_storage.mapper.FileMapper;
-import com.example.cloud_storage.repository.FileRepository;
-import com.example.cloud_storage.repository.FolderRepository;
-import com.example.cloud_storage.repository.SharedFileRepository;
-import com.example.cloud_storage.repository.UserRepository;
+import com.example.cloud_storage.mapper.PublicShareMapper;
+import com.example.cloud_storage.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.AccessDeniedException;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,7 +41,8 @@ public class FileService {
     private final S3Service s3Service;
     private final FolderRepository folderRepository; // Klasör bulmak için hala gerekli
     private final FolderService folderService;
-
+    private final PublicShareRepository publicShareRepository;
+    private final PublicShareMapper publicShareMapper;
     public UploadedFileResponseDto storeFile(MultipartFile file, String userId, String folderId) throws IOException {
      //   Path uploadDir = Paths.get("uploads");
       //  if (!Files.exists(uploadDir)) {
@@ -156,5 +157,54 @@ public class FileService {
     public List<SharedFileResponseDto> getSharedWithFiles(String userId) throws IOException {
 
         return fileMapper.toSharedFileResponseDtoList(sharedFileRepository.findBySharedWithId(userId));
+    }
+
+    public ResponseEntity<String> createPublicShareLink(String fileId, String userId) throws  IOException{
+
+        UploadedFileEntity file = fileRepository.findById(fileId)
+                .orElseThrow(() -> new FileNotFoundException("File could not found."));
+
+        if (!file.getUser().getId().equals(userId)){
+            throw new AccessDeniedException("You can not access this file!");
+        }
+
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() ->  new UsernameNotFoundException("User could not found."));
+
+        PublicShareEntity publicShareEntity = new PublicShareEntity();
+        publicShareEntity.setFile(file);
+        publicShareEntity.setCreatedBy(user);
+        publicShareEntity.setExpiresAt(LocalDateTime.now().plusDays(1));
+
+        PublicShareEntity savedEntity = publicShareRepository.save(publicShareEntity);
+        PublicSharedFileResponseDto responseDto = publicShareMapper.toPublicSharedDto(savedEntity);
+
+        String baseUrl = "http://localhost:8080";
+
+        String link = baseUrl + "/" + savedEntity.getId() + "/publicDownload"  ;
+        return ResponseEntity.status(HttpStatus.CREATED).body(link);
+    }
+    public ResponseEntity<Resource> downloadPublicSharedFile(String publicShareFileId){
+
+        PublicShareEntity publicShareEntity = publicShareRepository.findById(publicShareFileId)
+                .orElseThrow(()-> new RuntimeException("Public Share File not found"));
+
+        UploadedFileEntity file = publicShareEntity.getFile();
+
+        //  S3'ten pre-signed URL üret
+        URL presignedUrl = s3Service.generatePresignedUrl(file.getStoredFileName(), Duration.ofMinutes(30));
+
+        //  Resource oluştur
+        UrlResource resource = new UrlResource(presignedUrl);
+
+
+        String contentType = file.getContentType();
+
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType)) //dosya tipine göre dinamik görüntülemek için:
+                .header(HttpHeaders.CONTENT_DISPOSITION, //browsera bu dosyayla ne yapılack diye haber verir
+                        "attachment; filename=\"" + file.getOriginalFileName() + "\"") //attachment = "Bu dosyayı download et" inline = "Bu dosyayı browser'da göster" (alternatif)
+                .body(resource);
     }
 }

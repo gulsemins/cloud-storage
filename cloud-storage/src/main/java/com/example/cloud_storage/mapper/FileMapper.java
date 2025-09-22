@@ -14,6 +14,7 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface FileMapper {
 
+    @Mapping(source = "folder.id", target = "folderId")
     UploadedFileResponseDto toUploadedFileResponseDto (UploadedFileEntity entity);
 
     List<UploadedFileResponseDto> toUploadedFileResponseDtoList(List<UploadedFileEntity> entities);

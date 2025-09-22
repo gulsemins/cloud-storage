@@ -13,4 +13,5 @@ public class UploadedFileResponseDto {
     private Long size;
     private Date createdAt;
     private LocalDateTime uploadedAt;
+    private String folderId;
 }

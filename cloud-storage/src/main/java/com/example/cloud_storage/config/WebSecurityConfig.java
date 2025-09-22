@@ -42,9 +42,10 @@ public class WebSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 // 3. Define authorization rules
                 .authorizeHttpRequests(
-                        (request -> request
+                        request -> request
+                                .requestMatchers("/*/publicDownload").permitAll()
                                 .requestMatchers("/signup", "/login").permitAll()
-                                .anyRequest().authenticated())
+                                .anyRequest().authenticated()
                 )
                 // 4. Set session management to stateless
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

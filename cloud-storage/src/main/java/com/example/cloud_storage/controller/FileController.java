@@ -89,6 +89,7 @@ public class FileController {
         UserEntity user = userService.getUserByUsername(username);
         return fileService.shareFile(sharedFile, user.getId());
     }
+
     @GetMapping("/shared-with-me")
     public List<SharedFileResponseDto> getSharedWithMeFiles(@AuthenticationPrincipal CustomUserDetails userDetails) throws IOException{
 
@@ -96,8 +97,19 @@ public class FileController {
         UserEntity user = userService.getUserByUsername(username);
         return fileService.getSharedWithFiles(user.getId());
     }
+    @GetMapping("/{fileId}/publicDownload")
+        public ResponseEntity<Resource> downloadPublicFile(@PathVariable String fileId)throws IOException{
+            return fileService.downloadPublicSharedFile(fileId);
+        }
+
+    @PostMapping("{fileId}/createPublicLink")
+    public ResponseEntity<String>createPublicLink(@PathVariable String fileId, @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException{
+
+        String username = userDetails.getUsername();
+        UserEntity user = userService.getUserByUsername(username);
+        return fileService.createPublicShareLink(fileId, user.getId());
+    }
 
 }
-
 
 
