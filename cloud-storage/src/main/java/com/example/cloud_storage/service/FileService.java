@@ -1,9 +1,6 @@
 package com.example.cloud_storage.service;
 
-import com.example.cloud_storage.dtos.PublicSharedFileResponseDto;
-import com.example.cloud_storage.dtos.SharedFileDto;
-import com.example.cloud_storage.dtos.SharedFileResponseDto;
-import com.example.cloud_storage.dtos.UploadedFileResponseDto;
+import com.example.cloud_storage.dtos.*;
 import com.example.cloud_storage.entity.*;
 import com.example.cloud_storage.mapper.FileMapper;
 import com.example.cloud_storage.mapper.PublicShareMapper;
@@ -85,6 +82,40 @@ public class FileService {
 
         UploadedFileEntity saved = fileRepository.save(uploadedFile);
         return fileMapper.toUploadedFileResponseDto(saved);
+    }
+
+    public UploadedFileResponseDto uploadFileWithPresign(UploadFileRequestDto uploadFileRequestDto, UserEntity user, String folderId){
+        FolderEntity parentFolder = null;
+        String s3PathPrefix = user.getId() + "/";
+
+        if (folderId != null && !folderId.isEmpty()) {
+            parentFolder = folderRepository.findById(folderId)
+                    .orElseThrow(() -> new EntityNotFoundException("Folder not found"));
+            if (!parentFolder.getUser().getId().equals(user.getId())) {
+                throw new SecurityException("Access denied to this folder");
+            }
+            s3PathPrefix = folderService.buildS3PathForFolder(parentFolder);
+        }
+
+        String storedFileName = UUID.randomUUID() + "_" + uploadFileRequestDto.getOriginalFileName();
+
+        String fullS3Key = s3PathPrefix + storedFileName;
+
+        UploadedFileEntity uploadedFile = new UploadedFileEntity();
+        uploadedFile.setOriginalFileName(uploadFileRequestDto.getOriginalFileName());
+        uploadedFile.setStoredFileName(fullS3Key);
+        uploadedFile.setContentType(uploadFileRequestDto.getContentType());
+        uploadedFile.setSize(uploadFileRequestDto.getSize());
+        uploadedFile.setUser(user);
+
+        URL presignURL = s3Service.uploadWithPresignedUrl(fullS3Key, uploadFileRequestDto.getContentType(), Duration.ofMinutes(30));
+
+        UploadedFileEntity saved = fileRepository.save(uploadedFile);
+
+        UploadedFileResponseDto uploadedFileResponseDto = fileMapper.toUploadedFileResponseDto(saved);
+        uploadedFileResponseDto.setUrl(presignURL.toString());
+
+        return uploadedFileResponseDto;
     }
 
     public List<UploadedFileResponseDto> listFilesByUser(String userId) {

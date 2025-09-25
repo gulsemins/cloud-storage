@@ -13,6 +13,8 @@ import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 import java.io.IOException;
 import java.net.URL;
@@ -37,6 +39,22 @@ public class S3Service {
                         .build(),
                 RequestBody.fromInputStream(file.getInputStream(), file.getSize())
         );
+    }
+
+    public URL uploadWithPresignedUrl(String storedFileName, String contentType, Duration duration){
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .contentType(contentType)
+                .key(storedFileName)
+                .build();
+
+        PutObjectPresignRequest putObjectPresignRequest = PutObjectPresignRequest.builder()
+                .putObjectRequest(putObjectRequest)
+                .signatureDuration(duration)
+                .build();
+
+        return s3Presigner.presignPutObject(putObjectPresignRequest).url();
+
     }
 
     public Resource downloadFile(String storedFileName) {
