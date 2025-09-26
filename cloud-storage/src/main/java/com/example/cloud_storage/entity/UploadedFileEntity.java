@@ -48,7 +48,4 @@ public class UploadedFileEntity {
     @Column(name = "created_at")
     @CreationTimestamp
     private Date createdAt;
-
-
-
 }

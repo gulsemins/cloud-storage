@@ -38,6 +38,14 @@ public class FileController {
 
     }
 
+    @PostMapping("/presignUpload")
+    public ResponseEntity<UploadedFileResponseDto> uploadFileWithPresign(@RequestParam(required = false) String folderId, @RequestBody UploadFileRequestDto uploadFileRequestDto ,@AuthenticationPrincipal CustomUserDetails userDetails){
+        String username = userDetails.getUsername();
+        UserEntity user = userService.getUserByUsername(username);
+        UploadedFileResponseDto response = fileService.uploadFileWithPresign(uploadFileRequestDto, user, folderId);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/createFolders")
     public ResponseEntity<CreateFolderResponseDto> createFolder(
             @RequestBody CreateFolderRequestDto request,
