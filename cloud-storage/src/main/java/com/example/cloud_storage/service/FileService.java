@@ -234,4 +234,17 @@ public class FileService {
 
         return ResponseEntity.ok(presignedUrl);
     }
+
+    public ResponseEntity<Void> deleteFile(String fileId, String userId) throws IOException{
+        UploadedFileEntity fileToDelete = fileRepository.findById(fileId)
+                .orElseThrow(() -> new RuntimeException("File not found with id: " + fileId));
+
+        if(!(fileToDelete.getUser().getId().equals(userId)) ){
+            throw new AccessDeniedException("You do not have permission to delete this file.");
+        }
+
+        s3Service.deleteFile(fileToDelete.getStoredFileName());
+        fileRepository.delete(fileToDelete);
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);    }
 }

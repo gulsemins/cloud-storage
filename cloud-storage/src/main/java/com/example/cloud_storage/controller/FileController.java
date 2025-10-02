@@ -121,6 +121,14 @@ public class FileController {
         UserEntity user = userService.getUserByUsername(username);
         return fileService.createPublicShareLink(fileId, user.getId(),request.getExpirationHours());
     }
+    @GetMapping("{fileId}/delete")
+    public ResponseEntity<Void> deleteFile(@PathVariable String fileId, @AuthenticationPrincipal CustomUserDetails userDetails)throws IOException{
+
+        String username = userDetails.getUsername();
+        UserEntity user = userService.getUserByUsername(username);
+
+        return fileService.deleteFile(fileId, user.getId());
+    }
 
 }
 

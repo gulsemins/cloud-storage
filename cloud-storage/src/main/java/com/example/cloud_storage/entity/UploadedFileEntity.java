@@ -37,9 +37,13 @@ public class UploadedFileEntity {
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
-    @OneToMany(mappedBy = "file", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "file", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<SharedFileEntity> sharedFiles = new ArrayList<>();
+
+    @OneToMany(mappedBy = "file", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<PublicShareEntity> publicShares = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name="folder_id", nullable = true)
