@@ -2,7 +2,6 @@ package com.example.cloud_storage.mapper;
 
 import com.example.cloud_storage.dtos.SharedFileDto;
 import com.example.cloud_storage.dtos.SharedFileResponseDto;
-import com.example.cloud_storage.dtos.UploadedFileDto;
 import com.example.cloud_storage.dtos.UploadedFileResponseDto;
 import com.example.cloud_storage.entity.SharedFileEntity;
 import com.example.cloud_storage.entity.UploadedFileEntity;

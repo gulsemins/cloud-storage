@@ -4,6 +4,8 @@ import com.example.cloud_storage.dtos.UserResponseDto;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 
@@ -17,6 +19,7 @@ public class PublicShareEntity {
 
     @ManyToOne
     @JoinColumn(name = "file_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private UploadedFileEntity file;
 
     @ManyToOne

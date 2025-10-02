@@ -108,6 +108,8 @@ public class FileService {
         uploadedFile.setSize(uploadFileRequestDto.getSize());
         uploadedFile.setUser(user);
 
+        uploadedFile.setFolder(parentFolder);
+
         URL presignURL = s3Service.uploadWithPresignedUrl(fullS3Key, uploadFileRequestDto.getContentType(), Duration.ofMinutes(30));
 
         UploadedFileEntity saved = fileRepository.save(uploadedFile);
@@ -124,7 +126,7 @@ public class FileService {
         return fileMapper.toUploadedFileResponseDtoList(files);
     }
 
-    public ResponseEntity<Resource> downloadFile(String fileId, UserEntity user) throws IOException {
+    public ResponseEntity<URL> downloadFile(String fileId, UserEntity user) throws IOException {
 
         UploadedFileEntity file = fileRepository.findById(fileId)
                 .orElseThrow(() -> new RuntimeException("File not found"));
@@ -144,9 +146,6 @@ public class FileService {
         //  S3'ten pre-signed URL üret
         URL presignedUrl = s3Service.generatePresignedUrl(file.getStoredFileName(), Duration.ofMinutes(30));
 
-        //  Resource oluştur
-        UrlResource resource = new UrlResource(presignedUrl);
-
 
 
         //Path filePath = Paths.get("uploads", file.getStoredFileName());
@@ -160,11 +159,7 @@ public class FileService {
         String contentType = file.getContentType();
 
 
-        return ResponseEntity.ok()
-          .contentType(MediaType.parseMediaType(contentType)) //dosya tipine göre dinamik görüntülemek için:
-             .header(HttpHeaders.CONTENT_DISPOSITION, //browsera bu dosyayla ne yapılack diye haber verir
-                   "attachment; filename=\"" + file.getOriginalFileName() + "\"") //attachment = "Bu dosyayı download et" inline = "Bu dosyayı browser'da göster" (alternatif)
-            .body(resource);
+        return ResponseEntity.ok(presignedUrl);
     }
 
     public ResponseEntity<SharedFileResponseDto> shareFile(SharedFileDto sharedFileDto, String userId) throws IOException {
@@ -190,7 +185,7 @@ public class FileService {
         return fileMapper.toSharedFileResponseDtoList(sharedFileRepository.findBySharedWithId(userId));
     }
 
-    public ResponseEntity<String> createPublicShareLink(String fileId, String userId) throws  IOException{
+    public ResponseEntity<String> createPublicShareLink(String fileId, String userId, int expirationHours) throws  IOException{
 
         UploadedFileEntity file = fileRepository.findById(fileId)
                 .orElseThrow(() -> new FileNotFoundException("File could not found."));
@@ -202,40 +197,41 @@ public class FileService {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() ->  new UsernameNotFoundException("User could not found."));
 
+        // Validate expiration hours (between 1 hour and 30 days)
+        if (expirationHours < 1 || expirationHours > 720) {
+            throw new IllegalArgumentException("Expiration hours must be between 1 and 720 (30 days)");
+        }
+
         PublicShareEntity publicShareEntity = new PublicShareEntity();
         publicShareEntity.setFile(file);
         publicShareEntity.setCreatedBy(user);
-        publicShareEntity.setExpiresAt(LocalDateTime.now().plusDays(1));
+        publicShareEntity.setExpiresAt(LocalDateTime.now().plusHours(expirationHours));
 
         PublicShareEntity savedEntity = publicShareRepository.save(publicShareEntity);
         PublicSharedFileResponseDto responseDto = publicShareMapper.toPublicSharedDto(savedEntity);
 
-        String baseUrl = "http://localhost:8080";
+        String baseUrl = "http://localhost:5173";
 
         String link = baseUrl + "/" + savedEntity.getId() + "/publicDownload"  ;
         return ResponseEntity.status(HttpStatus.CREATED).body(link);
+
     }
-    public ResponseEntity<Resource> downloadPublicSharedFile(String publicShareFileId){
+    public ResponseEntity<URL> downloadPublicSharedFile(String publicShareFileId){
 
         PublicShareEntity publicShareEntity = publicShareRepository.findById(publicShareFileId)
                 .orElseThrow(()-> new RuntimeException("Public Share File not found"));
+
+        // Check if the link has expired
+        if (publicShareEntity.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("This public link has expired");
+        }
 
         UploadedFileEntity file = publicShareEntity.getFile();
 
         //  S3'ten pre-signed URL üret
         URL presignedUrl = s3Service.generatePresignedUrl(file.getStoredFileName(), Duration.ofMinutes(30));
 
-        //  Resource oluştur
-        UrlResource resource = new UrlResource(presignedUrl);
 
-
-        String contentType = file.getContentType();
-
-
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType)) //dosya tipine göre dinamik görüntülemek için:
-                .header(HttpHeaders.CONTENT_DISPOSITION, //browsera bu dosyayla ne yapılack diye haber verir
-                        "attachment; filename=\"" + file.getOriginalFileName() + "\"") //attachment = "Bu dosyayı download et" inline = "Bu dosyayı browser'da göster" (alternatif)
-                .body(resource);
+        return ResponseEntity.ok(presignedUrl);
     }
 }

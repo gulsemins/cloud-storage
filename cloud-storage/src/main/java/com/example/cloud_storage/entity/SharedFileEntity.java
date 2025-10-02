@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -22,6 +24,7 @@ public class SharedFileEntity {
 
     @ManyToOne
     @JoinColumn(name = "file_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private UploadedFileEntity file;
 
     @ManyToOne

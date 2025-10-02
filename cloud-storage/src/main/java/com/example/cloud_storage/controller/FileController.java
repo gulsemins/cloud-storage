@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 
 @AllArgsConstructor
@@ -27,19 +28,22 @@ public class FileController {
     private final FileRepository fileRepository;
     private final FolderService folderService;
 
+    // Old upload code without presignedurl to check it later
     @PostMapping("/upload")
     public ResponseEntity<UploadedFileResponseDto> uploadFile(@RequestParam("file") MultipartFile file,
                                                               @RequestParam(required = false) String folderId,
                                                               @AuthenticationPrincipal CustomUserDetails  userDetails) throws IOException {
         String username = userDetails.getUsername();
         UserEntity user = userService.getUserByUsername(username);
-      UploadedFileResponseDto response = fileService.storeFile(file, user.getId(), folderId);
+        UploadedFileResponseDto response = fileService.storeFile(file, user.getId(), folderId);
         return ResponseEntity.ok(response);
 
     }
 
     @PostMapping("/presignUpload")
-    public ResponseEntity<UploadedFileResponseDto> uploadFileWithPresign(@RequestParam(required = false) String folderId, @RequestBody UploadFileRequestDto uploadFileRequestDto ,@AuthenticationPrincipal CustomUserDetails userDetails){
+    public ResponseEntity<UploadedFileResponseDto> uploadFileWithPresign(@RequestBody UploadFileRequestDto uploadFileRequestDto,
+                                                                         @RequestParam(required = false) String folderId,
+                                                                         @AuthenticationPrincipal CustomUserDetails userDetails){
         String username = userDetails.getUsername();
         UserEntity user = userService.getUserByUsername(username);
         UploadedFileResponseDto response = fileService.uploadFileWithPresign(uploadFileRequestDto, user, folderId);
@@ -83,8 +87,8 @@ public class FileController {
     }
 
     @GetMapping("{fileId}/download")
-    public ResponseEntity<Resource> downloadFile (@PathVariable String fileId,
-                                                         @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException {
+    public ResponseEntity<URL> downloadFile (@PathVariable String fileId,
+                                             @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException {
 
         String username = userDetails.getUsername();
         UserEntity user = userService.getUserByUsername(username);
@@ -106,16 +110,16 @@ public class FileController {
         return fileService.getSharedWithFiles(user.getId());
     }
     @GetMapping("/{fileId}/publicDownload")
-        public ResponseEntity<Resource> downloadPublicFile(@PathVariable String fileId)throws IOException{
+        public ResponseEntity<URL> downloadPublicFile(@PathVariable String fileId)throws IOException{
             return fileService.downloadPublicSharedFile(fileId);
         }
 
     @PostMapping("{fileId}/createPublicLink")
-    public ResponseEntity<String>createPublicLink(@PathVariable String fileId, @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException{
+    public ResponseEntity<String>createPublicLink(@PathVariable String fileId, @RequestBody CreatePublicLinkRequestDto request, @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException{
 
         String username = userDetails.getUsername();
         UserEntity user = userService.getUserByUsername(username);
-        return fileService.createPublicShareLink(fileId, user.getId());
+        return fileService.createPublicShareLink(fileId, user.getId(),request.getExpirationHours());
     }
 
 }
