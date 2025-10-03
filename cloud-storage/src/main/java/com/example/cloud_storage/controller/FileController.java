@@ -121,13 +121,21 @@ public class FileController {
         UserEntity user = userService.getUserByUsername(username);
         return fileService.createPublicShareLink(fileId, user.getId(),request.getExpirationHours());
     }
-    @GetMapping("{fileId}/delete")
+    @DeleteMapping("/file/{fileId}")
     public ResponseEntity<Void> deleteFile(@PathVariable String fileId, @AuthenticationPrincipal CustomUserDetails userDetails)throws IOException{
 
         String username = userDetails.getUsername();
         UserEntity user = userService.getUserByUsername(username);
 
         return fileService.deleteFile(fileId, user.getId());
+    }
+
+    @DeleteMapping("/folder/{folderId}")    public ResponseEntity<Void> deleteFolder(@PathVariable String folderId,
+                                                                                     @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException {
+        String username = userDetails.getUsername();
+        UserEntity user = userService.getUserByUsername(username);
+
+       return fileService.deleteFolder(folderId, user.getId());
     }
 
 }

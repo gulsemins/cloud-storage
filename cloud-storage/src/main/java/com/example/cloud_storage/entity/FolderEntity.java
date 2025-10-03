@@ -34,6 +34,9 @@ public class FolderEntity {
     @OneToMany(mappedBy = "parentFolder", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FolderEntity> childFolders = new ArrayList<>();
 
+    @OneToMany(mappedBy = "folder", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UploadedFileEntity> files = new ArrayList<>();
+
     @Column(name = "created_at")
     @CreationTimestamp
     private Date createdAt;

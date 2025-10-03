@@ -19,6 +19,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -102,4 +103,29 @@ public class S3Service {
 
     }
 
-}
+    public void deleteFolder(String folderKey) {
+        if (!folderKey.endsWith("/")) {
+            folderKey += "/";
+        }
+
+        ListObjectsV2Response listResponse = s3Client.listObjectsV2(
+                ListObjectsV2Request.builder()
+                        .bucket(bucketName)
+                        .prefix(folderKey) // o klasör altındaki tüm objeler
+                        .build()
+        );
+
+        if (listResponse.hasContents()) {
+            List<ObjectIdentifier> toDelete = listResponse.contents().stream()
+                    .map(s3Object -> ObjectIdentifier.builder().key(s3Object.key()).build())
+                    .toList();
+
+            s3Client.deleteObjects(
+                    DeleteObjectsRequest.builder()
+                            .bucket(bucketName)
+                            .delete(Delete.builder().objects(toDelete).build())
+                            .build()
+            );
+    }
+
+}}

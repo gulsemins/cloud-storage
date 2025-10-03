@@ -247,4 +247,20 @@ public class FileService {
         fileRepository.delete(fileToDelete);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);    }
+
+    public ResponseEntity<Void> deleteFolder(String folderId, String userId) throws IOException{
+        FolderEntity folderToDelete = folderRepository.findById(folderId)
+                .orElseThrow(() -> new EntityNotFoundException("Folder not found with id: " + folderId));
+
+        if (!folderToDelete.getUser().getId().equals(userId)){
+            throw new AccessDeniedException("You do not have permission to delete this folder.");}
+
+        String folderKey = folderToDelete.getUser().getId() + "/" + folderToDelete.getName() + "/";
+        s3Service.deleteFolder(folderKey);
+
+
+        folderRepository.delete(folderToDelete);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);    }
+
 }
+
