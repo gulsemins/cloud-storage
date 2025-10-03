@@ -43,7 +43,7 @@ public class WebSecurityConfig {
                 // 3. Define authorization rules
                 .authorizeHttpRequests(
                         request -> request
-                                .requestMatchers("/*/publicDownload").permitAll()
+                                .requestMatchers("/file/*/publicDownload").permitAll()
                                 .requestMatchers("/signup", "/login").permitAll()
                                 .anyRequest().authenticated()
                 )

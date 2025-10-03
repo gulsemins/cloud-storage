@@ -21,6 +21,8 @@ import java.util.List;
 
 @AllArgsConstructor
 @RestController
+@RequestMapping("/file")
+
 public class FileController {
 
     private final FileService fileService;
@@ -76,7 +78,7 @@ public class FileController {
         return ResponseEntity.ok(subFolders);
     }
 
-    @GetMapping("/files")
+    @GetMapping("/getAllFiles")
     public ResponseEntity<List<UploadedFileResponseDto>> getUserFiles(@AuthenticationPrincipal CustomUserDetails  userDetails){
         String username = userDetails.getUsername();
         UserEntity user = userService.getUserByUsername(username);
@@ -120,7 +122,7 @@ public class FileController {
         UserEntity user = userService.getUserByUsername(username);
         return fileService.createPublicShareLink(fileId, user.getId(),request.getExpirationHours());
     }
-    @DeleteMapping("/file/{fileId}")
+    @DeleteMapping("/{fileId}")
     public ResponseEntity<Void> deleteFile(@PathVariable String fileId, @AuthenticationPrincipal CustomUserDetails userDetails)throws IOException{
 
         String username = userDetails.getUsername();
@@ -129,13 +131,6 @@ public class FileController {
         return fileService.deleteFile(fileId, user.getId());
     }
 
-    @DeleteMapping("/folder/{folderId}")    public ResponseEntity<Void> deleteFolder(@PathVariable String folderId,
-                                                                                     @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException {
-        String username = userDetails.getUsername();
-        UserEntity user = userService.getUserByUsername(username);
-
-       return fileService.deleteFolder(folderId, user.getId());
-    }
 
 }
 

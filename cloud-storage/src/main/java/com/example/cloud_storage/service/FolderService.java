@@ -10,8 +10,12 @@ import com.example.cloud_storage.repository.FolderRepository;
 import com.example.cloud_storage.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,11 +40,8 @@ public class FolderService {
 
             if (!parentFolder.getUser().getId().equals(userId)) {
                 throw new SecurityException("Access denied to create subfolder here");
-
             }
-
         }
-
         FolderEntity newFolder = new FolderEntity();
         newFolder.setName(request.getName());
         newFolder.setUser(user);
@@ -84,5 +85,19 @@ public class FolderService {
 
         return path.toString();
     }
+
+    public ResponseEntity<Void> deleteFolder(String folderId, String userId) throws IOException {
+        FolderEntity folderToDelete = folderRepository.findById(folderId)
+                .orElseThrow(() -> new EntityNotFoundException("Folder not found with id: " + folderId));
+
+        if (!folderToDelete.getUser().getId().equals(userId)){
+            throw new AccessDeniedException("You do not have permission to delete this folder.");}
+
+        String folderKey = folderToDelete.getUser().getId() + "/" + folderToDelete.getName() + "/";
+        s3Service.deleteFolder(folderKey);
+
+
+        folderRepository.delete(folderToDelete);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);    }
 
 }
