@@ -53,10 +53,10 @@ public class FolderService {
         return folderMapper.toFolderResponseDto(savedFolder);
     }
 
-    public List<GetFolderResponseDto> listFoldersByUser(String userId){
+    public List<GetFolderResponseDto> listRootFoldersByUser(String userId){
 
-        List<FolderEntity> folders = folderRepository.findByUserId(userId);
-        return folderMapper.toFolderDtoList(folders);
+        List<FolderEntity> parentFolders = folderRepository.findByUserIdAndParentFolderIsNull(userId);
+        return folderMapper.toFolderDtoList(parentFolders);
     }
 
     public List<GetFolderResponseDto> listSubFolders(String id){

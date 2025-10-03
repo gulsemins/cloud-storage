@@ -13,6 +13,8 @@ import java.util.Optional;
 public interface FolderRepository extends JpaRepository<FolderEntity, String> {
     List<FolderEntity> findByUserId(String id);
     List<FolderEntity> findByParentFolderId(String id);
+    List<FolderEntity> findByUserIdAndParentFolderIsNull(String id);
+
 
 
 }

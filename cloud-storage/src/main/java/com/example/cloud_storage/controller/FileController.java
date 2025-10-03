@@ -67,9 +67,8 @@ public class FileController {
         String username = userDetails.getUsername();
         UserEntity user = userService.getUserByUsername(username);
 
-        List<GetFolderResponseDto> folders = folderService.listFoldersByUser(user.getId());
+        List<GetFolderResponseDto> folders = folderService.listRootFoldersByUser(user.getId());
         return ResponseEntity.ok(folders);
-
     }
     @GetMapping("/subFolders/{id}")
         public ResponseEntity<List<GetFolderResponseDto>> getSubFolders(@PathVariable String id){
