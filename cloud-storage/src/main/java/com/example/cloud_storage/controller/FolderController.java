@@ -62,6 +62,16 @@ public class FolderController {
         return folderService.deleteFolder(folderId, user.getId());
     }
 
+    @PutMapping("/{folderId}/changeName")
+    public ResponseEntity<String> changeName(@PathVariable String folderId,
+                                             @RequestBody ChangeFolderNameRequestDto request,
+                                             @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException{
+        String username = userDetails.getUsername();
+        UserEntity user = userService.getUserByUsername(username);
+
+        return folderService.changeFolderName(folderId, user.getId(), request.getName());
+    }
+
 }
 
 

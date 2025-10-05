@@ -52,32 +52,6 @@ public class FileController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/createFolders")
-    public ResponseEntity<CreateFolderResponseDto> createFolder(
-            @RequestBody CreateFolderRequestDto request,
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    ){
-
-        UserEntity user = userService.getUserByUsername(userDetails.getUsername());
-
-        CreateFolderResponseDto response = folderService.createFolder(request, user.getId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    @GetMapping("/folders")
-    public ResponseEntity<List<GetFolderResponseDto>> listFoldersByUser(@AuthenticationPrincipal CustomUserDetails  userDetails){
-        String username = userDetails.getUsername();
-        UserEntity user = userService.getUserByUsername(username);
-
-        List<GetFolderResponseDto> folders = folderService.listRootFoldersByUser(user.getId());
-        return ResponseEntity.ok(folders);
-    }
-    @GetMapping("/subFolders/{id}")
-        public ResponseEntity<List<GetFolderResponseDto>> getSubFolders(@PathVariable String id){
-            List<GetFolderResponseDto> subFolders = folderService.listSubFolders(id);
-        return ResponseEntity.ok(subFolders);
-    }
-
     @GetMapping("/getAllFiles")
     public ResponseEntity<List<UploadedFileResponseDto>> getUserFiles(@AuthenticationPrincipal CustomUserDetails  userDetails){
         String username = userDetails.getUsername();

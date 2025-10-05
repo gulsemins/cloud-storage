@@ -100,4 +100,20 @@ public class FolderService {
         folderRepository.delete(folderToDelete);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);    }
 
+    public ResponseEntity<String> changeFolderName(String folderId, String userId, String request) throws IOException {
+        FolderEntity folder = folderRepository.findById(folderId)
+                .orElseThrow(() -> new EntityNotFoundException("Folder not found with id: " + folderId));
+
+        if (!folder.getUser().getId().equals(userId)){
+            throw new AccessDeniedException("You do not have permission to change this folder.");}
+
+
+        folder.setName(request);
+
+        folderRepository.save(folder);
+
+        return  ResponseEntity.ok(folder.getName());
+
+    }
+
 }
