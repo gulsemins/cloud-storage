@@ -10,6 +10,7 @@ public class UploadedFileResponseDto {
     private String id;
     private String originalFileName;
     private String storedFileName;
+    private String contentType;
     private Long size;
     private Date createdAt;
     private LocalDateTime uploadedAt;

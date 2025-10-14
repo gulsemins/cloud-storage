@@ -14,6 +14,7 @@ import java.util.List;
 public interface FileMapper {
 
     @Mapping(source = "folder.id", target = "folderId")
+    @Mapping(source = "contentType", target = "contentType")
     UploadedFileResponseDto toUploadedFileResponseDto (UploadedFileEntity entity);
 
     List<UploadedFileResponseDto> toUploadedFileResponseDtoList(List<UploadedFileEntity> entities);
