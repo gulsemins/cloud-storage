@@ -16,7 +16,7 @@ services:
         - AWS_SECRET_KEY=${AWS_SECRET_KEY}
     image: cloud-storage-app:1.0
     ports:
-      - "8080:8082"
+      - "8082:8080"
     depends_on:
       - db
     # Konteyner çalıştığında bu değişkenlerin tekrar ayarlanması gerekmez,
