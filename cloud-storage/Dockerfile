@@ -11,6 +11,7 @@ ARG AWS_S3_BUCKET_NAME
 ARG AWS_REGION
 ARG AWS_ACCESS_KEY
 ARG AWS_SECRET_KEY
+ARG SERVER_PORT
 
 # 3. Build-time'da alınan argümanları, konteyner çalıştığında
 # uygulamanın okuyabilmesi için ortam değişkenlerine (environment variables) atıyoruz.
@@ -22,7 +23,7 @@ ENV AWS_S3_BUCKET_NAME=$AWS_S3_BUCKET_NAME
 ENV AWS_REGION=$AWS_REGION
 ENV AWS_ACCESS_KEY=$AWS_ACCESS_KEY
 ENV AWS_SECRET_KEY=$AWS_SECRET_KEY
-
+ENV SERVER_PORT=$SERVER_PORT
 
 COPY target/cloud-storage-0.0.1-SNAPSHOT.jar app.jar
 
