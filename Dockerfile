@@ -1,4 +1,4 @@
-FROM openjdk:17-jdk-alpine
+FROM eclipse-temurin:17-alpine
 
 
 # 2. Uygulamanın ihtiyaç duyacağı TÜM yapılandırma değerleri için
