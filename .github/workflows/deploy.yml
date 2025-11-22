@@ -53,7 +53,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /root/cloud-storage/cloud-storage
+            cd /root/cloud-storage
             git pull
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/cloud-storage:latest
             docker compose up -d app
