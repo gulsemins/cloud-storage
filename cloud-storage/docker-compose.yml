@@ -2,19 +2,9 @@ version: '3.8'
 
 services:
   app:
-    build:
-      context: . #bu dosyada bul diyor bu image ı
-      args:
-        # Dockerfile'daki ARG'ları .env dosyasındaki değişkenlerle dolduruyoruz
-        - JWT_SECRET=${JWT_SECRET}
-        - DB_URL=${DB_URL}
-        - DB_USERNAME=${DB_USERNAME}
-        - DB_PASSWORD=${DB_PASSWORD}
-        - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
-        - AWS_REGION=${AWS_REGION}
-        - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
-        - AWS_SECRET_KEY=${AWS_SECRET_KEY}
-    image: cloud-storage-app:1.0
+    image: gulseminsevindi/cloud-storage
+      #build: context:  . #bu klasördeki dockerfile' ı kullanarak imageı build et diyor ama biz artık dockerhubdan build edilmiş image i alıyoruz. onda aşağıdakini yazdık
+
     ports:
       - "8082:8080"
     depends_on:
