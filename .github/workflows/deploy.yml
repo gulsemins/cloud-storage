@@ -57,3 +57,4 @@ jobs:
             git pull
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/cloud-storage:latest
             docker compose up -d app
+            
